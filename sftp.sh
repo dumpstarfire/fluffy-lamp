@@ -57,3 +57,18 @@ else
 fi
 systemctl restart sshd
 systemctl restart vsftpd
+
+read -p  "Do you want to create a user? y/n: " user_answer
+if [ "$user_answer" == "y" ] ; then
+    read -p "Enter username: " user_name
+    useradd $user_name
+    read -p "Setting user password: " user_password
+    if [ "$OS" == "rhel" ] ; then
+          echo $user_password | passwd $user_name --stdin
+    else
+          echo $user_name:$user_password | chpasswd
+    fi
+else
+    echo "Password Not Chosen"
+fi
+
