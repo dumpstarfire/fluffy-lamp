@@ -1,4 +1,5 @@
 #!/bin/bash
+#Check OS and perform updates
 command -v yum > /dev/null && OS=rhel
 command -v apt > /dev/null && OS=debian
 if [ "$OS" == "rhel" ] ; then
@@ -10,6 +11,8 @@ else
      apt-get -y install vsftpd
      apt-get -y openssh-server
 fi
+
+# Edit SFTP configuration file
 sed 's/anonymous_enable=YES/anonymous_enable=YES/g' /etc/vsftpd/vsftpd.conf
 echo "chroot_local_user=YES" >> /etc/vsftpd/vsftpd.conf
 echo "allow_writeable_chroot=YES" >> /etc/vsftpd/vsftpd.conf
@@ -17,7 +20,16 @@ echo "pasv_enable=Yes" >> /etc/vsftpd/vsftpd.conf
 echo "pasv_min_port=40000" >> /etc/vsftpd/vsftpd.conf
 echo "pasv_max_port=40100" >> /etc/vsftpd/vsftpd.conf
 
+#Create sftp_users group
+
 groupadd sftp_users
+
+#Create SFTP directory
+mkdir -p /data
+chmod 701 /data
+
+#Add users added from bash
+
 
 if [ "$OS" == "rhel" ] ; then
      adduser $1
@@ -29,19 +41,11 @@ else
 
 fi
 
-mkdir -p /data
-chmod 701 /data
-
 mkdir -p /data/$1/upload
 chown -R root:sftp_users /data/$1
 chown -R $1:sftp_users /data/$1/upload
 
-echo "Match Group sftp_users" >> /etc/ssh/sshd_config
-echo "ChrootDirectory /data/%u" >> /etc/ssh/sshd_config
-echo "ForceCommand internal-sftp" >> /etc/ssh/sshd_config
-#echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
-
-sed -i 's/PasswordAuthentication\s*no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+#ask if they want root to have access via SFTP
 
 read -p  "Do you want to allow root to login? y/n: " root_answer
 if [ "$root_answer" == "y" ] ; then
@@ -55,8 +59,8 @@ if [ "$root_answer" == "y" ] ; then
 else
     echo "Password Not Chosen"
 fi
-systemctl restart sshd
-systemctl restart vsftpd
+
+#Ask if additional users need to be created
 
 read -p  "Do you want to create a user? y/n: " user_answer
 if [ "$user_answer" == "y" ] ; then
@@ -72,3 +76,31 @@ else
     echo "Password Not Chosen"
 fi
 
+#Add users from /home to data access on sshd_config file
+
+echo "Match Group sftp_users" >> /etc/ssh/sshd_config
+echo "ChrootDirectory /data/%u" >> /etc/ssh/sshd_config
+echo "ForceCommand internal-sftp" >> /etc/ssh/sshd_config
+#echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+
+sed -i 's/PasswordAuthentication\s*no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+
+#Restart Services
+
+systemctl restart sshd
+systemctl restart vsftpd
+
+
+
+###############################################################
+# Author: MikeZ
+# Title: Install & Configure SFTP
+# Working on the following OS'#!/bin/sh
+# AMZ2 - Root and User Works
+# This script will detect the OS of your System
+# Then it will download the appropriate packages
+# After downloading the nescessary packages it will then
+# edit the appropriate files
+# After so if you want to enble root for SFTP or create users,
+# You can do so after installing
+###############################################################
