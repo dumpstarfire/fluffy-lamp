@@ -64,17 +64,31 @@ fi
 
 read -p  "Do you want to create a user? y/n: " user_answer
 if [ "$user_answer" == "y" ] ; then
-    read -p "Enter username: " user_name
-    useradd $user_name
-    read -p "Setting user password: " user_password
-    if [ "$OS" == "rhel" ] ; then
-          echo $user_password | passwd $user_name --stdin
-    else
-          echo $user_name:$user_password | chpasswd
-    fi
+  read -p "Enter username: " user_name
+  read -p "Enter Password: " user_password
+
+  if [ "$OS" == "rhel" ] ; then
+       adduser $user_name
+       echo $user_password | passwd $user_name --stdin
+       mkdir -p /data/$user_name/upload
+       chown -R root:sftp_users /data/$user_name
+       chown -R $user_name:sftp_users /data/$user_name/upload
+
+  else
+       adduser --disabled-password --gecos "" $user_name
+       echo $user_name:$user_password  | chpasswd
+       mkdir -p /data/$user_name/upload
+       chown -R root:sftp_users /data/$user_name
+       chown -R $user_name:sftp_users /data/$user_name/upload
+
+  fi
+
 else
     echo "Password Not Chosen"
 fi
+
+
+
 
 #Add users from /home to data access on sshd_config file
 
@@ -96,7 +110,12 @@ systemctl restart vsftpd
 # Author: MikeZ
 # Title: Install & Configure SFTP
 # Working on the following OS'#!/bin/sh
-# AMZ2 - Root and User Works
+# Amazon Linux 2 - Root and User Works
+# Amazon Linux 1 - You will need to restart services or reboot system
+#                 You would need to fix uuid for root login
+# RHEL 8 - Root and User works
+# Ubuntu 18 - Root and User works
+# Centos 8
 # This script will detect the OS of your System
 # Then it will download the appropriate packages
 # After downloading the nescessary packages it will then
