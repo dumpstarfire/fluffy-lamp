@@ -45,51 +45,6 @@ mkdir -p /data/$1/upload
 chown -R root:sftp_users /data/$1
 chown -R $1:sftp_users /data/$1/upload
 
-#ask if they want root to have access via SFTP
-
-read -p  "Do you want to allow root to login? y/n: " root_answer
-if [ "$root_answer" == "y" ] ; then
-    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
-    read -p "Setting root password: " root_password
-    if [ "$OS" == "rhel" ] ; then
-         echo $root_password | passwd root --stdin
-    else
-         echo root:$root_password | chpasswd
-    fi
-else
-    echo "Password Not Chosen"
-fi
-
-#Ask if additional users need to be created
-
-read -p  "Do you want to create a user? y/n: " user_answer
-if [ "$user_answer" == "y" ] ; then
-  read -p "Enter username: " user_name
-  read -p "Enter Password: " user_password
-
-  if [ "$OS" == "rhel" ] ; then
-       adduser $user_name
-       echo $user_password | passwd $user_name --stdin
-       mkdir -p /data/$user_name/upload
-       chown -R root:sftp_users /data/$user_name
-       chown -R $user_name:sftp_users /data/$user_name/upload
-
-  else
-       adduser --disabled-password --gecos "" $user_name
-       echo $user_name:$user_password  | chpasswd
-       mkdir -p /data/$user_name/upload
-       chown -R root:sftp_users /data/$user_name
-       chown -R $user_name:sftp_users /data/$user_name/upload
-
-  fi
-
-else
-    echo "Password Not Chosen"
-fi
-
-
-
-
 #Add users from /home to data access on sshd_config file
 
 echo "Match Group sftp_users" >> /etc/ssh/sshd_config
@@ -113,9 +68,9 @@ systemctl restart vsftpd
 # Amazon Linux 2 - Root and User Works
 # Amazon Linux 1 - You will need to restart services or reboot system
 #                 You would need to fix uuid for root login
-# RHEL 8 - Root and User works
+# RHEL 8    - Root and User works
 # Ubuntu 18 - Root and User works
-# Centos 8
+# Centos 8  - Root and User works
 # This script will detect the OS of your System
 # Then it will download the appropriate packages
 # After downloading the nescessary packages it will then
