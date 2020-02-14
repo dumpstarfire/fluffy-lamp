@@ -29,8 +29,16 @@ else
           sudo start amazon-ssm-agent
         fi
 fi
-#Working on the Following OS
+###############################################################
+# Author: MikeZ
+# Title: Installing SSM Agent via Script
+# Working on the Following OS
 # RHEL 6.x
 # RHEL 7.6
 # Rhel 8.x
 # Ubuntu 16.04 and 18.04
+# This script will detect the OS of your System
+# Then it will install the agent
+###############################################################
+
+
