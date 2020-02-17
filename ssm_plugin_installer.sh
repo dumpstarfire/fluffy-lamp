@@ -16,6 +16,6 @@ elif [ "$OS" == "osx" ] ; then
      unzip sessionmanager-bundle.zip
      sudo ./sessionmanager-bundle/install -i /usr/local/sessionmanagerplugin -b /usr/local/bin/session-manager-plugin
 else
-     echo "canno install"
+     echo "cannot install, please try installing manually"
 fi
 session-manager-plugin
