@@ -36,6 +36,7 @@ else
      echo "cannot install"
 fi
 
+echo "Run aws --version to confirm installation"
 
 ###############################################################
 # Author: MikeZ @dumpstarfire
